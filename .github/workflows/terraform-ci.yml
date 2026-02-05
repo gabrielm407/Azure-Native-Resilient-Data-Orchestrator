@@ -1,30 +1,29 @@
-name: "Terraform Infrastructure"
+name: "Terraform CI/CD"
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 env:
-  TF_WORKING_DIR: './infrastructure' # Where the Terraform code is located
+  TF_WORKING_DIR: './infrastructure'
+  # Secrets mapping
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
 
 jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # 10 minute timeout for the job
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
-    env:
-      # Map secrets to environment variables Terraform expects
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      # Authentication for TFE Backend
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
 
     steps:
       - name: Checkout Code
@@ -40,9 +39,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
+        # We generate a binary plan file to ensure the Apply is exact
         run: terraform plan -input=false -out=tfplan
 
       - name: Upload Plan Artifact
+        # Only upload if we might apply later (i.e., on Main)
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
@@ -52,18 +54,15 @@ jobs:
     name: "Terraform Apply"
     needs: terraform-plan
     runs-on: ubuntu-latest
+    # 🛑 CONDITION: Only run if this is a push to 'main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
+    # 🛑 ENVIRONMENT: Triggers the Manual Approval request
     environment: production
     
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
 
     steps:
       - name: Checkout Code
@@ -74,14 +73,15 @@ jobs:
         with:
           terraform_version: "1.7.0"
 
+      # We must Init again because it's a fresh runner
+      - name: Terraform Init
+        run: terraform init
+
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
           name: tfplan
           path: ${{ env.TF_WORKING_DIR }}
-
-      - name: Terraform Init
-        run: terraform init
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
