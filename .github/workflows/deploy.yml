@@ -1,0 +1,45 @@
+name: 🚀 Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+env:
+  AZURE_FUNCTIONAPP_NAME: 'func-databricks-demo-xxxxxx'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './published'        
+  DOTNET_VERSION: '8.0.x' 
+  PROJECT_PATH: './src'                                 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v4
+
+    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: '🧪 Run Unit Tests'
+      shell: bash
+      run: |
+        pushd ${{ env.PROJECT_PATH }}
+        dotnet test
+        popd
+
+    - name: '🏗️ Build and Publish'
+      shell: bash
+      run: |
+        # Publish the app to the 'published' folder in the root
+        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+
+    - name: '🚀 Deploy to Azure Functions'
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
