@@ -1,5 +1,5 @@
 # ============================================================================
-# Terraform Providers and Backend Configuration 
+# Terraform Providers and Backend Configuration
 # ============================================================================
 
 terraform {
