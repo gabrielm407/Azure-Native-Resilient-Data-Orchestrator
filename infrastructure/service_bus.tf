@@ -6,7 +6,7 @@ resource "azurerm_servicebus_namespace" "sb" {
 }
 
 resource "azurerm_servicebus_queue" "sb_queue" {
-  name         = "job-queue"
-  namespace_id = azurerm_servicebus_namespace.sb.id
+  name                 = "job-queue"
+  namespace_id         = azurerm_servicebus_namespace.sb.id
   partitioning_enabled = true # Optimizes for scale
 }
