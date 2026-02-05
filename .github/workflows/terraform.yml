@@ -14,6 +14,7 @@ jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # 10 minute timeout for the job
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
