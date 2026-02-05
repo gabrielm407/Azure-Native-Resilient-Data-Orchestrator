@@ -6,9 +6,8 @@ on:
       - main
   pull_request:
 
-# Define where your terraform code lives
 env:
-  TF_WORKING_DIR: './infrastructure' 
+  TF_WORKING_DIR: './infrastructure' # Where the Terraform code is located
 
 jobs:
   terraform-plan:
