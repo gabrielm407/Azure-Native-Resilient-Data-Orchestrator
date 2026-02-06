@@ -1,4 +1,4 @@
 resource "azurerm_resource_group" "rg" {
   name     = "rg-databricks-demo-dev"
-  location = "East US"
+  location = "Canda Central"
 }
