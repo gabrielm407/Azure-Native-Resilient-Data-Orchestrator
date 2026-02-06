@@ -4,13 +4,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'func-databricks-demo-xxxxxx'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './published'        
   DOTNET_VERSION: '8.0.x' 
-  PROJECT_PATH: './src'                                 
+  PROJECT_PATH: './src/DataOrchestrator'                              
 
 jobs:
   build-and-deploy:
@@ -23,6 +26,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: '📂 Debug - List Files'
+      run: ls -R src/
 
     - name: '🧪 Run Unit Tests'
       shell: bash
