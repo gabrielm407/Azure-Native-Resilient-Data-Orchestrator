@@ -9,12 +9,17 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        
-        // Register Service Bus Client
-        services.AddAzureClients(clientBuilder =>
+
+        // 🛡️ SAFETY CHECK: Only register Service Bus if the config exists
+        var serviceBusConnection = Environment.GetEnvironmentVariable("ServiceBusConnection");
+
+        if (!string.IsNullOrEmpty(serviceBusConnection))
         {
-            clientBuilder.AddServiceBusClient(Environment.GetEnvironmentVariable("ServiceBusConnection"));
-        });
+            services.AddAzureClients(clientBuilder =>
+            {
+                clientBuilder.AddServiceBusClient(serviceBusConnection);
+            });
+        }
     })
     .Build();
 
