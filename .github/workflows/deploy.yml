@@ -10,7 +10,7 @@ on:
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'func-databricks-demo-xxxxxx'
+  AZURE_FUNCTIONAPP_NAME: 'func-databricks-demo-znpacs' # Azure Function App name
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './published'        
   DOTNET_VERSION: '8.0.x' 
   PROJECT_PATH: './src/DataOrchestrator'                              
