@@ -1,0 +1,50 @@
+name: "⚠️ Terraform Destroy"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "DESTROY" to confirm deletion'
+        required: true
+        default: ''
+
+env:
+  TF_WORKING_DIR: './infrastructure'
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+
+jobs:
+  terraform-destroy:
+    name: "Destroy Resources"
+    runs-on: ubuntu-latest
+    # 🛑 SAFETY: Requires Manual Approval
+    environment: production
+    
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      # Safety Check: Fail immediately if user didn't type DESTROY
+      - name: Check Confirmation
+        if: inputs.confirmation != 'DESTROY'
+        run: |
+          echo "Error: You did not type 'DESTROY'. Aborting."
+          exit 1
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
