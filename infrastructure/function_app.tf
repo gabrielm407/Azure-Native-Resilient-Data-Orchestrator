@@ -25,6 +25,6 @@ resource "azurerm_linux_function_app" "function_app" {
     "FUNCTIONS_WORKER_RUNTIME"       = "dotnet-isolated"
     "ServiceBusConnection"           = azurerm_servicebus_namespace.sb.default_primary_connection_string
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.app_insights.instrumentation_key
+    "AzureWebJobsStorage"            = azurerm_storage_account.sa.primary_connection_string
   }
 }
-
