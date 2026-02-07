@@ -29,22 +29,22 @@ jobs:
 
     steps:
       # Safety Check: Fail immediately if user didn't type DESTROY
-      - name: Check Confirmation
+      - name: '🛑 Check Confirmation'
         if: inputs.confirmation != 'DESTROY'
         run: |
           echo "Error: You did not type 'DESTROY'. Aborting."
           exit 1
 
-      - name: Checkout Code
+      - name: '🔽 Checkout Code'
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
+      - name: '🌱 Setup Terraform'
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
 
-      - name: Terraform Init
+      - name: '⚙️ Terraform Init'
         run: terraform init
 
-      - name: Terraform Destroy
+      - name: '💥 Terraform Destroy'
         run: terraform destroy -auto-approve
