@@ -40,9 +40,14 @@ jobs:
     - name: '🏗️ Build and Publish'
       shell: bash
       run: |
-        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        zip -r ../functionapp.zip .
+        # Publish to a dedicated folder
+        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ./published
+
+    - name: '📂 Debug - Verify Files'
+      shell: bash
+      run: |
+        # Show us exactly what is about to be deployed
+        ls -R ./published
 
     - name: '🔐 Log in to Azure'
       uses: azure/login@v1
@@ -53,4 +58,4 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './functionapp.zip'
+        package: './published' # <--- Deploy the FOLDER, not a zip
